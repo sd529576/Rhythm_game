@@ -32,7 +32,7 @@ class Start_button_class():
         if self.rect.collidepoint(pos):
             #[0] = left most button, [1] = middle most button, [2] = right most button
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
+                #self.clicked = True
                 print("Clicked")
                 Main()
 
@@ -44,15 +44,14 @@ class Exit_button_class():
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y)
-        self.clicked = False
 
     def draw(self):
         pos = pygame.mouse.get_pos()
 
         if self.rect.collidepoint(pos):
             #[0] = left most button, [1] = middle most button, [2] = right most button
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
+            if pygame.mouse.get_pressed()[0] == 1:
+                print("exit_button_clicked.")
                 pygame.quit()
                 quit()
         screen.blit(self.image,(self.rect.x,self.rect.y))
@@ -177,14 +176,21 @@ def Main():
     run = True
     while run:
         screen.blit(bg,(0,0))
-        screen.blit(life,(500,0))
-        screen.blit(life,(600,0))
-        screen.blit(life,(700,0))
-        
+        if life_count == 3:    
+            screen.blit(life,(500,0))
+            screen.blit(life,(600,0))
+            screen.blit(life,(700,0))
+        if life_count == 2:
+            screen.blit(life,(600,0))
+            screen.blit(life,(500,0))
+        if life_count == 1:
+            screen.blit(life,(500,0))
+        if life_count == 0:
+            screen.blit(blind,(500,0))
+            print("Lost")
+            Main_Menu()
         #fills black image on the life to indicate the loss of heart when the block is missed.
         
-        screen.blit(blind,(700,0))
-        screen.blit(blind,(600,0))
 
         font = pygame.font.SysFont(None,50)
         text = font.render("Score:" + str(score), True,(255, 255, 0))
@@ -214,26 +220,19 @@ def Main():
         #draws long rectangle and falls from (x= 0 , y =99 ) with the speed of y = 1
         #Color variant : red green blue yellow pink
         for rect in map_rect:
+            if rect[1] > 600:
+                score = 0
+                map_rect.remove(rect)
+                life_count = life_count -1
+                print(life_count)
             if rect[0] > 99 and rect[0] < 200:
                 pygame.draw.rect(screen,(205,92,92),rect)
-                if rect[1] > 600:
-                    score = 0
-                    map_rect.remove(rect)
             if rect[0] > 199 and rect[0] < 300:
                 pygame.draw.rect(screen,(0,250,154),rect)
-                if rect[1] > 600:
-                    score = 0
-                    map_rect.remove(rect)
             if rect[0] > 299 and rect[0] < 400:
                 pygame.draw.rect(screen,(0,191,255),rect)
-                if rect[1] > 600:
-                    score = 0
-                    map_rect.remove(rect)
             if rect[0] > 399 and rect[0] < 500:
                 pygame.draw.rect(screen,(255,228,181),rect)
-                if rect[1] > 600:
-                    score = 0
-                    map_rect.remove(rect)
             if rect[0] > 499 and rect[0] < 600:
                 pygame.draw.rect(screen,(255,182,193),rect)
                 #poisened block implementation in progress. It merges with the life counting.
@@ -256,6 +255,7 @@ def Main():
 
         if score >= 50:
             particle1.emit()
+            
         pygame.display.update()
         clock.tick(240)
 Main_Menu()

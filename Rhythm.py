@@ -2,11 +2,13 @@ import pygame
 import random
 from pygame import mixer
 
+
 pygame.init()
+pygame.mixer.pre_init(44100, 16, 2, 4096)
 mixer.init()
 
 
-screen = pygame.display.set_mode((800,600))
+screen = pygame.display.set_mode((700,600))
 bg = pygame.image.load("rhythm_bg_image.png").convert()
 menu_bg = pygame.image.load("main_menu2.jpg").convert()
 start = pygame.image.load("start_button.png").convert()
@@ -14,7 +16,6 @@ exit = pygame.image.load("exit_button.png").convert()
 life = pygame.image.load("life.png").convert()
 blind = pygame.image.load("blind.png").convert()
 clock = pygame.time.Clock()
-random_list = [6,10,12,16,20,24,26,28,30]
 game_paused = False
 
 
@@ -33,7 +34,6 @@ class Start_button_class():
             #[0] = left most button, [1] = middle most button, [2] = right most button
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 #self.clicked = True
-                print("Clicked")
                 Main()
 
         screen.blit(self.image,(self.rect.x,self.rect.y))
@@ -56,44 +56,9 @@ class Exit_button_class():
                 quit()
         screen.blit(self.image,(self.rect.x,self.rect.y))
 
-class particles():
-    def __init__(self):
-        self.particles = []
-        self.surface = pygame.image.load('star.png').convert_alpha()
-        self.width = self.surface.get_rect().width
-        self.height = self.surface.get_rect().height
-    def emit(self):
-        if self.particles:
-            self.delete_particles()
-            for particle in self.particles:
-                particle[0].x += particle[1]#move y position(pos_y) to upwards(direction = -1)
-                particle[0].y += particle[2]
-                particle[3] -= 0.2 #shrinking particles
-                screen.blit(self.surface,particle[0])
-    def add_particles1(self):
-        pos_x = 700 - (self.width / 2)
-        pos_y = 150 - (self.height / 2)
-        direction_x = random.randint(-3,3) 
-        direction_y = random.randint(-3,3)
-        lifetime = random.randint(4,10)
-        particle_rect = pygame.Rect(pos_x,pos_y,self.width,self.height)
-        self.particles.append([particle_rect,direction_x,direction_y,lifetime])
-    def add_particles2(self):
-        pos_x = 100 - (self.width / 2)
-        pos_y = 150 - (self.height / 2)
-        direction_x = random.randint(-3,3) 
-        direction_y = random.randint(-3,3)
-        lifetime = random.randint(4,10)
-        particle_rect = pygame.Rect(pos_x,pos_y,self.width,self.height)
-        self.particles.append([particle_rect,direction_x,direction_y,lifetime])
-    def delete_particles(self):
-        particles_copy = [particle for particle in self.particles if particle[3] > 0]
-        self.particles = particles_copy
+start_button = Start_button_class(200,200,start)
+exit_button = Exit_button_class(200,350,exit)
 
-start_button = Start_button_class(250,200,start)
-exit_button = Exit_button_class(250,350,exit)
-
-particle1 = particles()
 
 # creating the classes for the keys
 class Key():
@@ -147,14 +112,17 @@ def Main_Menu():
 
 # Main menu music 
 def Main_Menu_music(music):
-    mixer.music.load(music + ".mp3")
+    mixer.init()
+    mixer.music.load(music + ".wav")
     mixer.music.set_volume(0.2)
     mixer.music.play()
 
 # loading the music and the map file.
+
 def load(map):
-    rects = [] 
-    mixer.music.load(map + ".mp3")
+    rects = []
+    mixer.init() 
+    mixer.music.load(map + ".wav")
     mixer.music.play()
     mixer.music.set_volume(0.2)
     f = open(map + ".txt",'r')
@@ -165,32 +133,31 @@ def load(map):
                 rects.append(pygame.Rect(keys[x].rect.centerx - 40,y * -100,80,25))
     return rects
 
-particle_event = pygame.USEREVENT +1
-pygame.time.set_timer(particle_event,50)
 
 def Main():
     map_rect = load("Rhythm")
-    print(map_rect[5][0])
     score = 0
     life_count = 3
     run = True
     while run:
         screen.blit(bg,(0,0))
+        """
         if life_count == 3:    
             screen.blit(life,(500,0))
+            screen.blit(life,(550,0))
             screen.blit(life,(600,0))
-            screen.blit(life,(700,0))
         if life_count == 2:
-            screen.blit(life,(600,0))
+            screen.blit(life,(550,0))
             screen.blit(life,(500,0))
         if life_count == 1:
             screen.blit(life,(500,0))
         if life_count == 0:
             screen.blit(blind,(500,0))
             print("Lost")
+            mixer.music.pause()
             Main_Menu()
+        """
         #fills black image on the life to indicate the loss of heart when the block is missed.
-        
 
         font = pygame.font.SysFont(None,50)
         text = font.render("Score:" + str(score), True,(255, 255, 0))
@@ -203,9 +170,6 @@ def Main():
                 if event.key == pygame.K_SPACE:
                     mixer.music.pause()
                     paused()
-            if event.type == particle_event:
-                particle1.add_particles1()
-                particle1.add_particles2()
 
         k = pygame.key.get_pressed()
         #highlights color to white when it's pressed.  
@@ -253,9 +217,6 @@ def Main():
                     key.handled = True
                     break
 
-        if score >= 50:
-            particle1.emit()
-            
+        clock.tick(240)    
         pygame.display.update()
-        clock.tick(240)
 Main_Menu()
